@@ -5,33 +5,30 @@ import ir.maktab127.config.ApplicationContext;
 import ir.maktab127.entities.Card;
 import ir.maktab127.entities.Transaction;
 import ir.maktab127.entities.User;
-import ir.maktab127.repositories.CardRepository;
-import ir.maktab127.repositories.TransactionRepository;
-import ir.maktab127.repositories.UserRepository;
-import ir.maktab127.services.CardService;
-import ir.maktab127.services.TransactionService;
-import ir.maktab127.services.UserService;
+import ir.maktab127.repositories.*;
+import ir.maktab127.services.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-    private static ApplicationContext context = ApplicationContext.getInstance();
-    private static UserRepository userRepository = new UserRepository(context);
-    private static CardRepository cardRepository = new CardRepository(context);
-    private static TransactionRepository transactionRepository = new TransactionRepository(context);
+    private static ApplicationContext applicationContext = ApplicationContext.getInstance();
+    
 
-    private static UserService userService = new UserService(userRepository);
-    private static CardService cardService = new CardService(cardRepository);
-    private static TransactionService transactionService = new TransactionService(transactionRepository, cardRepository);
+    private static UserRepository userRepository = new UserRepositoryImpl(  applicationContext);
+    private static CardRepository cardRepository = new CardRepositoryImpl(applicationContext);
+    private static TransactionRepository transactionRepository = new TransactionRepositoryImpl(applicationContext);
+
+
+    private static UserService userService = new UserServiceImpl(userRepository);
+    private static CardService cardService = new CardServiceImpl(cardRepository);
+    private static TransactionService transactionService = new TransactionServiceImpl(transactionRepository, cardRepository);
 
     public static void main(String[] args) {
         try {
 
-            userRepository.createUserTable();
-            cardRepository.createCardTable();
-            transactionRepository.createTransactionTable();
 
 
             while (true) {
@@ -51,7 +48,7 @@ public class Main {
                         loginUser();
                         break;
                     case 3:
-                        System.out.println("Good buy");
+                        System.out.println("Good bye");
                         return;
                     default:
                         System.out.println("Invalid choice. Please try again.");
@@ -61,6 +58,7 @@ public class Main {
             e.printStackTrace();
         }
     }
+
 
     private static void registerUser() throws Exception {
         System.out.print("Enter username: ");
@@ -126,7 +124,7 @@ public class Main {
             System.out.println("6. Back to User Menu");
             System.out.print("Enter your choice: ");
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -237,7 +235,7 @@ public class Main {
                     Transfer("paya");
                     break;
                 case 3:
-                    Transfer("groupPaya");
+                     payaGroupTransfer();
                     break;
                 case 4:
                     Transfer("satna");
@@ -268,6 +266,7 @@ public class Main {
             }
         }
     }
+    
     private static void Transfer(String type) throws Exception {
         System.out.print("Enter source card number: ");
         String fromCard = scanner.nextLine();
@@ -281,11 +280,22 @@ public class Main {
         System.out.println(type+" transfer completed successfully!");
     }
 
-
-
     private static void payaGroupTransfer() throws Exception {
-        System.out.println("Group transfers  not implemented .");
+        System.out.print("Enter source card number: ");
+        String fromCard = scanner.nextLine();
+        System.out.println("Enter Qty of destination card number: ");
+        int quantity = scanner.nextInt();
+        scanner.nextLine();
+        List<String> toCards = new ArrayList<>();
+        for (int i = 0; i < quantity; i++) {
+            System.out.print("Enter destination card number: ");
+            String toCard = scanner.nextLine();
+            toCards.add(toCard);
+        }
+        System.out.print("Enter amount: ");
+        double amount = scanner.nextDouble();
+        scanner.nextLine();
+
+        transactionService.payaGroup(fromCard, toCards, amount, quantity);
     }
-
-
 }
